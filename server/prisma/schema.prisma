@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  account      Account?
+}
+
+model Account {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  /// Balance in cents (100000 = $1000.00). CHECK (balance >= 0) in the migration.
+  balance   Int
+  createdAt DateTime   @default(now())
+  sent      Transfer[] @relation("SentTransfers")
+  received  Transfer[] @relation("ReceivedTransfers")
+}
+
+model Transfer {
+  id            String   @id @default(uuid())
+  fromAccountId String
+  toAccountId   String
+  /// Amount in cents. CHECK (amount > 0) in the migration.
+  amount        Int
+  createdAt     DateTime @default(now())
+  fromAccount   Account  @relation("SentTransfers", fields: [fromAccountId], references: [id])
+  toAccount     Account  @relation("ReceivedTransfers", fields: [toAccountId], references: [id])
+
+  @@index([fromAccountId, createdAt])
+  @@index([toAccountId, createdAt])
+}
