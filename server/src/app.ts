@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { config } from './config.js';
-import { authRouter } from './routes/auth.routes.js';
-import { meRouter } from './routes/me.routes.js';
-import { transfersRouter } from './routes/transfers.routes.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { config } from './config.ts';
+import { authRouter } from './routes/auth.routes.ts';
+import { meRouter } from './routes/me.routes.ts';
+import { transfersRouter } from './routes/transfers.routes.ts';
+import { errorHandler, notFound } from './middleware/errorHandler.ts';
 
 export const app = express();
 

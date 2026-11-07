@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../api/client.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import BalanceCard from '../components/BalanceCard.jsx';
-import TransferForm from '../components/TransferForm.jsx';
-import TransactionList from '../components/TransactionList.jsx';
+import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import BalanceCard from '../components/BalanceCard';
+import TransferForm from '../components/TransferForm';
+import TransactionList from '../components/TransactionList';
+import type { MeResponse, Transfer } from '../types';
 
 export default function DashboardPage() {
   const { token, logout } = useAuth();
-  const [me, setMe] = useState(null);
-  const [transfers, setTransfers] = useState([]);
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -16,13 +17,13 @@ export default function DashboardPage() {
     setError('');
     try {
       const [meData, list] = await Promise.all([
-        api('/me', { token }),
-        api('/transfers', { token }),
+        api<MeResponse>('/me', { token }),
+        api<Transfer[]>('/transfers', { token }),
       ]);
       setMe(meData);
       setTransfers(list);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -32,18 +33,18 @@ export default function DashboardPage() {
     load();
   }, [load]);
 
-  if (loading) return <main className="dashboard"><p className="muted">Cargando…</p></main>;
+  if (loading) return <main className="dashboard"><p className="muted">Loading…</p></main>;
 
   return (
     <main className="dashboard">
       <header>
-        <h1>Hola{me ? `, ${me.user.name}` : ''}</h1>
-        <button className="link" onClick={logout}>Cerrar sesión</button>
+        <h1>Hello{me ? `, ${me.user.name}` : ''}</h1>
+        <button className="link" onClick={logout}>Log out</button>
       </header>
 
       {error && (
         <p className="error" role="alert">
-          {error} <button className="link" onClick={load}>Reintentar</button>
+          {error} <button className="link" onClick={load}>Retry</button>
         </p>
       )}
 

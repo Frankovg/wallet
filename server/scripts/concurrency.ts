@@ -3,16 +3,24 @@
 // Requires the API running: npm run dev
 const API = `http://localhost:${process.env.PORT || 4000}/api`;
 
-async function call(path, { token, ...opts } = {}) {
+interface CallOptions {
+  token?: string;
+  method?: string;
+  body?: string;
+}
+
+// Response bodies are only read by this script; `any` keeps the checks below short.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function call(path: string, { token, ...opts }: CallOptions = {}): Promise<{ status: number; body: any }> {
   const res = await fetch(API + path, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
   });
   return { status: res.status, body: await res.json() };
 }
 
 const stamp = Date.now();
-const register = (name) =>
+const register = (name: string) =>
   call('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email: `${name}-${stamp}@test.com`, password: 'password123' }),
